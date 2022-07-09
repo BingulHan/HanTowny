@@ -7,24 +7,10 @@ import org.bukkit.OfflinePlayer;
 public class PlayerManager {
 
     public boolean isMember(OfflinePlayer player) {
-        for (Land land : LandManager.getLands()) {
-            for (String membership : land.getMembers()) {
-                if (membership.equals(player.getName())) return true;
-            }
-        }
-
-        return false;
+        return LandManager.getLands().stream().anyMatch(land -> land.getMembers().contains(player.getName()));
     }
 
     public Land getLand(OfflinePlayer player)  throws NullPointerException{
-
-        for (Land land : LandManager.getLands()) {
-            for (String membership : land.getMembers()) {
-                if (membership.equals(player.getName())) return land;
-            }
-        }
-
-        return null;
-
+        return LandManager.getLands().stream().filter(land -> land.getMembers().contains(player.getName())).findAny().get();
     }
 }
