@@ -1,0 +1,7 @@
+name: Towny
+version: '${project.version}'
+main: online.bingulhan.towny.Towny
+authors: [ BingulHan ]
+commands:
+  towny:
+    description: Towny ana komutu
