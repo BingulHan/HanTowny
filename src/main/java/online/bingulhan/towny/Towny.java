@@ -1,6 +1,7 @@
 package online.bingulhan.towny;
 
 import online.bingulhan.towny.cmd.CMDLand;
+import online.bingulhan.towny.cmd.CMDLandFounder;
 import online.bingulhan.towny.land.Land;
 import online.bingulhan.towny.land.LandArea;
 import online.bingulhan.towny.land.LandManager;
@@ -32,62 +33,19 @@ public final class Towny extends JavaPlugin {
         getConfig().options().copyDefaults(true);
         saveConfig();
 
-        backupManager=new YamlBackupManager();
 
+        backupManager=new YamlBackupManager();
         LandManager.setLands(backupManager.getAllLands());
 
-        if (!LandArea.AREA_FILE.exists()) {
-            try {
-                LandArea.AREA_FILE.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
 
-        getServer().getScheduler().runTaskLater(this, () -> {
-
-            FileConfiguration townyConfig = YamlConfiguration.loadConfiguration(LandArea.AREA_FILE);
-
-            for (String area : townyConfig.getConfigurationSection("").getKeys(false)){
-                try {
-
-                    int x = townyConfig.getInt(area+".x");
-                    int z = townyConfig.getInt(area+".z");
-                    String wN = townyConfig.getString(area+".wn");
-                    String presidentName = townyConfig.getString(area+".land");
-                    World world = getServer().getWorld(wN);
-                    Land land = new LandManager().getLand(presidentName);
-
-                    LandArea ar = new LandArea(land, world.getChunkAt(x,z));
-                    LandArea.addArea(land, ar);
-                    LandArea.AREA_LIST.add(ar);
-
-                }catch (Exception exception) {
-
-                }
-            }
-
-
-            getServer().getConsoleSender().sendMessage(ChatColor.GREEN+"Tespit edilen area: "+LandArea.AREA_LIST.size());
-
-        }, 20);
-
-
-        this.getCommand("towny").setExecutor(new CMDLand());
-
-
-        getServer().getConsoleSender().sendMessage(ChatColor.GREEN+"Tespit edilen ülkeler: "+LandManager.getLands().size());
-
+        loadLandAreas();
+        registerCommands();
 
         getServer().getPluginManager().registerEvents(new Listener() {
 
             @EventHandler
             public void event(BlockBreakEvent e) {
-
-
                 LandManager landManager = new LandManager();
-
-                e.getPlayer().sendMessage("Durum: "+landManager.isLand(e.getBlock().getChunk()));
                 if (landManager.isLand(e.getBlock().getChunk())) {
                     e.getPlayer().sendMessage(ChatColor.YELLOW+"Ülkenin adı: "+landManager.getLand(e.getBlock().getChunk()).getLandName());
                 }
@@ -124,5 +82,45 @@ public final class Towny extends JavaPlugin {
 
     public static Towny getInstance() {
         return instance;
+    }
+
+
+    public void registerCommands() {
+        this.getCommand("town").setExecutor(new CMDLand());
+        getCommand("townfounder").setExecutor(new CMDLandFounder());
+    }
+
+    public void loadLandAreas() {
+        if (!LandArea.AREA_FILE.exists()) {
+            try {
+                LandArea.AREA_FILE.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        getServer().getScheduler().runTaskLater(this, () -> {
+
+            FileConfiguration townyConfig = YamlConfiguration.loadConfiguration(LandArea.AREA_FILE);
+
+            for (String area : townyConfig.getConfigurationSection("").getKeys(false)){
+                try {
+
+                    int x = townyConfig.getInt(area+".x");
+                    int z = townyConfig.getInt(area+".z");
+                    String wN = townyConfig.getString(area+".wn");
+                    String presidentName = townyConfig.getString(area+".land");
+                    World world = getServer().getWorld(wN);
+                    Land land = new LandManager().getLand(presidentName);
+
+                    LandArea ar = new LandArea(land, world.getChunkAt(x,z));
+                    LandArea.addArea(land, ar);
+                    LandArea.AREA_LIST.add(ar);
+
+                }catch (Exception exception) {
+
+                }
+            }
+        }, 20);
     }
 }

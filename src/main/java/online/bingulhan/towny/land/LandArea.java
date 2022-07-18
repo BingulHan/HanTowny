@@ -41,7 +41,7 @@ public class LandArea implements Comparable<LandArea>{
 
     public static void addArea(Land land, LandArea area) {
         land.getLands().add(area);
-         addBackup(area);
+        addBackup(area);
     }
 
     public static void addBackup(LandArea land) {
@@ -64,8 +64,8 @@ public class LandArea implements Comparable<LandArea>{
 
         FileConfiguration landConfig = YamlConfiguration.loadConfiguration(LandArea.AREA_FILE);
 
-        for (LandArea land : l.getLands()) {
-            landConfig.set(""+land.getChunk().getWorld().getName()+"_"+land.getChunk().getX()+"_"+land.getChunk().getX(), null);;
+        for (LandArea area : l.getLands()) {
+            resetArea(area);
         }
 
         try {
@@ -76,11 +76,12 @@ public class LandArea implements Comparable<LandArea>{
     }
 
     public static void resetArea(LandArea area) {
-
         FileConfiguration landConfig = YamlConfiguration.loadConfiguration(LandArea.AREA_FILE);
 
+        landConfig.set(""+area.getChunk().getWorld().getName()+area.getChunk().getX()+area.getChunk().getZ(), null);
         area.getConnectedLand().getLands().remove(area);
-        landConfig.set(""+area.getChunk().getWorld().getName()+"_"+area.getChunk().getX()+"_"+area.getChunk().getX(), null);
+
+        AREA_LIST.remove(area);
 
         try {
             landConfig.save(AREA_FILE);

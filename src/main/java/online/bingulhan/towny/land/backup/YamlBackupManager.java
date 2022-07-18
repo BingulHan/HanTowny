@@ -20,7 +20,7 @@ public class YamlBackupManager implements IBackupManager {
 
     @Override
     public void backup(Land land) {
-        File file = new File(folder.getPath(), land.getPresidentData()+".yml");
+        File file = new File(folder.getPath(), land.getToken()+".yml");
 
         if (!file.exists()) {
             try {
@@ -33,6 +33,7 @@ public class YamlBackupManager implements IBackupManager {
         FileConfiguration c = YamlConfiguration.loadConfiguration(file);
         c.set("president", land.getPresidentData());
         c.set("members", land.getMembers());
+        c.set("landname", land.getLandName());
         try {
             c.save(file);
         } catch (IOException e) {
@@ -49,7 +50,9 @@ public class YamlBackupManager implements IBackupManager {
                     FileConfiguration c = YamlConfiguration.loadConfiguration(file);
                     String president = c.getString("president");
                     Set<String> members = (Set<String>) c.get("members");
-                    return new Land(president, members, true);
+                    String landName = c.getString("landname");
+                    String token = file.getName();
+                    return new Land(president, members, true).setName(landName).setToken(token);
                 }
 
             }catch (Exception exception) {
@@ -62,7 +65,7 @@ public class YamlBackupManager implements IBackupManager {
 
     @Override
     public void delete(Land land) {
-        File file = new File(folder.getPath(), land.getPresidentData()+".yml");
+        File file = new File(folder.getPath(), land.getToken()+".yml");
 
         if (!file.exists()) {
             return;
@@ -86,8 +89,11 @@ public class YamlBackupManager implements IBackupManager {
                     FileConfiguration c = YamlConfiguration.loadConfiguration(file);
                     String president = c.getString("president");
                     Set<String> members = (Set<String>) c.get("members");
+                    String landName = c.getString("landname");
+                    String token = file.getName();
 
-                    lands.add(new Land(president, members, true));
+                    lands.add(new Land(president, members, true).setName(landName).setToken(token));
+
 
             }catch (Exception exception) {
                 exception.printStackTrace();

@@ -3,5 +3,7 @@ version: '${project.version}'
 main: online.bingulhan.towny.Towny
 authors: [ BingulHan ]
 commands:
-  towny:
+  town:
     description: Towny ana komutu
+  townfounder:
+    description: Towny Lider ana komutu

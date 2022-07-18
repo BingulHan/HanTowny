@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class LandManager {
 
-    private static ArrayList<Land> LANDS = new ArrayList<>();
+    protected static ArrayList<Land> LANDS = new ArrayList<>();
 
     public static ArrayList<Land> getLands() {
         return new ArrayList<>(LANDS);
@@ -21,12 +21,29 @@ public class LandManager {
 
     public void addLand(Land land) {
 
-        Towny.getInstance().backupManager.backup(land);
         LANDS.add(land);
+        Towny.getInstance().backupManager.backup(land);
+
+
+    }
+
+    public void addLand(Land land, boolean init) {
+
+        LANDS.add(land);
+        Towny.getInstance().backupManager.backup(land);
+
+        if (init) {
+            for (LandArea landArea : land.getLands()) {
+                LandArea.AREA_LIST.add(landArea);
+            }
+        }
+
+
     }
 
     public void removeLand(Land land) {
 
+        LandArea.resetAreas(land);
         Towny.getInstance().backupManager.delete(land);
         LANDS.remove(land);
 
@@ -41,6 +58,16 @@ public class LandManager {
         return null;
     }
 
+    public Land getLandExtented(String landName) throws NullPointerException {
+        for (Land land : getLands()) {
+            if (land.getLandName().equals(landName)) {
+                return land;
+            }
+        }
+        return null;
+    }
+
+
     /**
      * Chunkta bir bölgeye ait olup olmadığını
      * algılayan sistem.
@@ -50,7 +77,9 @@ public class LandManager {
     public Boolean isLand(Chunk chunk) {
         for (LandArea area: LandArea.AREA_LIST) {
             if (area.getChunk().getX() == chunk.getX() && area.getChunk().getZ()==chunk.getZ()) {
-                return true;
+                if (area.getChunk().getWorld().getName().equals(chunk.getWorld().getName())) {
+                    return true;
+                }
             }
         }
 
@@ -66,7 +95,9 @@ public class LandManager {
     public Land getLand(Chunk chunk) throws NullPointerException {
         for (LandArea area : LandArea.AREA_LIST) {
             if (area.getChunk().getX() == chunk.getX() && area.getChunk().getZ()==chunk.getZ()) {
-                return area.getConnectedLand();
+                if (area.getChunk().getWorld().getName().equals(chunk.getWorld().getName())) {
+                    return area.getConnectedLand();
+                }
             }
         }
 
@@ -82,8 +113,11 @@ public class LandManager {
      */
     public LandArea getLandArea(Chunk chunk) throws NullPointerException {
         for (LandArea area : LandArea.AREA_LIST) {
-            if (area.getChunk().getX() == chunk.getX() && area.getChunk().getZ()==chunk.getZ()) {
-                return area;
+            if (area.getChunk().getX() == chunk.getX() && area.getChunk().getZ()==chunk.getZ())  {
+                if (area.getChunk().getWorld().getName().equals(chunk.getWorld().getName())) {
+                    return area;
+                }
+
             }
         }
 

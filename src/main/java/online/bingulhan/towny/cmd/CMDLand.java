@@ -1,5 +1,7 @@
 package online.bingulhan.towny.cmd;
 
+import online.bingulhan.towny.Towny;
+import online.bingulhan.towny.bll.LandFounderManager;
 import online.bingulhan.towny.bll.PlayerManager;
 import online.bingulhan.towny.land.Land;
 import online.bingulhan.towny.land.LandArea;
@@ -30,9 +32,11 @@ public class CMDLand implements CommandExecutor, TabCompleter {
                     if (!landManager.isLand(player.getLocation().getChunk())) {
 
                         Set<LandArea> area = new TreeSet<>();
+
                         Land land = new Land(player.getName(), area);
-                        LandArea.addArea(land, new LandArea(land, player.getPlayer().getLocation().getChunk()));
-                        landManager.addLand(land);
+                        land.getLands().add(new LandArea(land, player.getPlayer().getLocation().getChunk()));
+
+                        landManager.addLand(land, true);
 
                         player.sendTitle("", ChatColor.GREEN+"Ülken kuruldu!");
                     }
@@ -51,6 +55,65 @@ public class CMDLand implements CommandExecutor, TabCompleter {
                     landManager.removeLand(land);
                 }else {
                     player.sendMessage(ChatColor.RED+"Şuan da bir vatanın yok.");
+                }
+            }
+
+            if (args[0].equalsIgnoreCase("accept")) {
+                Player player = (Player) sender;
+                PlayerManager playerManager = new PlayerManager();
+                LandManager landManager = new LandManager();
+                if (!playerManager.isMember(player)) {
+
+                    if (args.length>1) {
+                        String l = args[1];
+                        if (landManager.getLandExtented(l)!=null) {
+                            if (playerManager.isReq(player, landManager.getLandExtented(l))) {
+                                playerManager.acceptPlayer(player, landManager.getLandExtented(l));
+                                player.sendMessage(ChatColor.GREEN+"Artık vatandaşsın!");
+                                player.sendTitle("", ChatColor.GREEN+"Yeni Vatandaşlık: "+l);
+
+
+                            }else {
+                                player.sendMessage(ChatColor.GREEN+l+" Ülkesinden gelen bir vatandaşlık davetin yok.");
+                            }
+                        }else {
+                            player.sendMessage(ChatColor.RED+""+l+" Adında bir ülke yok!");
+                        }
+                    }else {
+                        player.sendMessage(ChatColor.GREEN+"Ülke adı giriniz. Kullanım: /land accept <isim>");
+                    }
+
+
+                }else {
+                    player.sendMessage(ChatColor.RED+"Zaten bir ülkeye üyesin.");
+                }
+            }
+
+            if (args[0].equalsIgnoreCase("leave")) {
+                Player player = (Player) sender;
+                PlayerManager playerManager = new PlayerManager();
+                LandManager landManager = new LandManager();
+                if (!playerManager.isMember(player)) {
+
+                    Land land = playerManager.getLand(player);
+                    land.getMembers().remove(player.getName());
+                    player.sendTitle("", ChatColor.RED+"Vatandaşlıktan ayrıldın!");
+
+                    if (land.getPresidentData().equals(player.getName())) {
+                        for (String member : land.getMembers()) {
+
+                            LandFounderManager landFounderManager = new LandFounderManager();
+                            landFounderManager.setLandPresident(land, member);
+
+                            OfflinePlayer offlinePlayer = Towny.getInstance().getServer().getOfflinePlayer(member);
+                            if (offlinePlayer.isOnline()) {
+                                offlinePlayer.getPlayer().sendMessage(ChatColor.GREEN+"Artık ülkenin liderisin!");
+                            }
+                            return true;
+                        }
+                    }
+
+
                 }
             }
         }
